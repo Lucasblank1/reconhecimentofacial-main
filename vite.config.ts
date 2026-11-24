@@ -5,7 +5,7 @@ import path from "path";
 // https://vitejs.dev/config/
 // GitHub Pages project URL: https://<user>.github.io/<repo>/
 export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/reconhecimentofacial/" : "/",
+  base: mode === "production" ? "/reconhecimentofacial-main/" : "/",
   server: {
     host: "::",
     port: 8080,
