@@ -51,6 +51,7 @@ export function useFaceRecognition() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [persons, setPersons] = useState<Person[]>(initialPersons);
   const labeledRef = useRef<LabeledPerson[]>([]);
+  const matchInProgressRef = useRef(false);
   const [dbReady, setDbReady] = useState(false);
 
   // Load models (pasta local em public/models no deploy; senão CDN do repositório oficial)
@@ -104,7 +105,10 @@ export function useFaceRecognition() {
     ): Promise<{ person: Person; distance: number } | null> => {
       if (!dbReady || labeledRef.current.length === 0) return null;
       const detection = await faceapi
-        .detectSingleFace(imageElement)
+        .detectSingleFace(
+          imageElement,
+          new faceapi.SsdMobilenetv1Options({ inputSize: 608, minConfidence: 0.5 })
+        )
         .withFaceLandmarks()
         .withFaceDescriptor();
       if (!detection) return null;
@@ -135,29 +139,39 @@ export function useFaceRecognition() {
         box: { x: number; y: number; width: number; height: number };
       }>
     > => {
-      if (!dbReady) return [];
-      const detections = await faceapi
-        .detectAllFaces(imageElement)
-        .withFaceLandmarks()
-        .withFaceDescriptors();
-      if (!detections || detections.length === 0) return [];
+      if (!dbReady || matchInProgressRef.current) return [];
 
-      return detections.map((det, index) => {
-        const { x, y, width, height } = det.detection.box;
-        let bestMatch: { person: Person; distance: number } | null = null;
-        for (const entry of labeledRef.current) {
-          const distance = faceapi.euclideanDistance(det.descriptor, entry.descriptor);
-          if (!bestMatch || distance < bestMatch.distance) {
-            bestMatch = { person: entry.person, distance };
+      matchInProgressRef.current = true;
+      try {
+        const detections = await faceapi
+          .detectAllFaces(
+            imageElement,
+            new faceapi.SsdMobilenetv1Options({ inputSize: 608, minConfidence: 0.5 })
+          )
+          .withFaceLandmarks()
+          .withFaceDescriptors();
+
+        if (!detections || detections.length === 0) return [];
+
+        return detections.map((det, index) => {
+          const { x, y, width, height } = det.detection.box;
+          let bestMatch: { person: Person; distance: number } | null = null;
+          for (const entry of labeledRef.current) {
+            const distance = faceapi.euclideanDistance(det.descriptor, entry.descriptor);
+            if (!bestMatch || distance < bestMatch.distance) {
+              bestMatch = { person: entry.person, distance };
+            }
           }
-        }
-        if (bestMatch && bestMatch.distance < FACE_MATCH_DISTANCE_THRESHOLD) {
-          const sim = distanceToSimilarityPercent(bestMatch.distance);
-          logFaceMatchDebug(`matchAllFaces#${index} → ${bestMatch.person.name}`, bestMatch.distance, sim);
-          return { person: bestMatch.person, distance: bestMatch.distance, box: { x, y, width, height } };
-        }
-        return { person: null, distance: null, box: { x, y, width, height } };
-      });
+          if (bestMatch && bestMatch.distance < FACE_MATCH_DISTANCE_THRESHOLD) {
+            const sim = distanceToSimilarityPercent(bestMatch.distance);
+            logFaceMatchDebug(`matchAllFaces#${index} → ${bestMatch.person.name}`, bestMatch.distance, sim);
+            return { person: bestMatch.person, distance: bestMatch.distance, box: { x, y, width, height } };
+          }
+          return { person: null, distance: null, box: { x, y, width, height } };
+        });
+      } finally {
+        matchInProgressRef.current = false;
+      }
     },
     [dbReady]
   );

@@ -124,6 +124,12 @@ export default function Index() {
 
   return (
     <div className="flex min-h-screen flex-col overflow-x-hidden">
+      <a
+        href="#conteudo-principal"
+        className="sr-only z-[100] rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus:not-sr-only focus:absolute focus:left-4 focus:top-4"
+      >
+        Pular para o conteúdo principal
+      </a>
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container max-w-lg mx-auto flex items-center gap-3 py-3 px-4">
@@ -140,10 +146,13 @@ export default function Index() {
       </header>
 
       {/* Main */}
-      <main className="container mx-auto min-h-0 w-full min-w-0 max-w-lg flex-1 space-y-3 px-3 py-4 sm:space-y-4 sm:px-4 sm:py-6">
+      <main id="conteudo-principal" tabIndex={-1} className="container mx-auto min-h-0 w-full min-w-0 max-w-lg flex-1 space-y-3 px-3 py-4 sm:space-y-4 sm:px-4 sm:py-6">
         <StatisticsPanel statistics={statistics} />
+        <span className="sr-only" role="status" aria-live="polite">
+          {scanning ? "Processando a imagem capturada." : "Nenhuma análise em andamento."}
+        </span>
         {scanError && (
-          <p className="text-center text-sm text-destructive" role="alert">
+          <p className="text-center text-sm text-destructive" role="alert" aria-live="assertive">
             {scanError}
           </p>
         )}
@@ -222,7 +231,7 @@ export default function Index() {
 
         {state === "result" && (
           <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
               Nenhum rosto detectado na imagem.
             </p>
             <button

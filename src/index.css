@@ -63,6 +63,10 @@
     font-family: var(--font-body);
   }
 
+  ::selection {
+    background: hsl(210 100% 50% / 0.35);
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 700;
@@ -102,6 +106,17 @@
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 20px hsl(210 100% 50% / 0.2); }
   50% { box-shadow: 0 0 40px hsl(210 100% 50% / 0.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @keyframes scan {

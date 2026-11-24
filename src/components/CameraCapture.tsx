@@ -235,7 +235,10 @@ export default function CameraCapture({
   };
 
   return (
-    <div className="flex w-full min-w-0 max-w-full flex-col items-center gap-3 sm:gap-4">
+    <div
+      className="flex w-full min-w-0 max-w-full flex-col items-center gap-3 sm:gap-4"
+      aria-busy={scanning}
+    >
       <fieldset className="m-0 flex w-full min-w-0 max-w-md flex-col gap-2 border-0 p-0">
         <legend className="sr-only">Câmera</legend>
         <p className="text-[10px] font-heading uppercase tracking-widest text-muted-foreground text-center">
@@ -247,7 +250,7 @@ export default function CameraCapture({
             onClick={handleSelectFrontal}
             disabled={scanning}
             aria-pressed={facingMode === "user"}
-            className={`flex-1 max-w-[9rem] px-3 py-2 rounded-lg font-heading font-semibold uppercase tracking-wider text-xs transition disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`flex min-h-11 flex-1 max-w-[9rem] px-3 py-2 rounded-lg font-heading font-semibold uppercase tracking-wider text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40 ${
               facingMode === "user"
                 ? "bg-primary text-primary-foreground glow-primary"
                 : "bg-secondary text-secondary-foreground hover:brightness-110"
@@ -260,7 +263,7 @@ export default function CameraCapture({
             onClick={() => void handleSelectTraseira()}
             disabled={scanning}
             aria-pressed={facingMode === "environment"}
-            className={`flex-1 max-w-[9rem] px-3 py-2 rounded-lg font-heading font-semibold uppercase tracking-wider text-xs transition disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`flex min-h-11 flex-1 max-w-[9rem] px-3 py-2 rounded-lg font-heading font-semibold uppercase tracking-wider text-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40 ${
               facingMode === "environment"
                 ? "bg-primary text-primary-foreground glow-primary"
                 : "bg-secondary text-secondary-foreground hover:brightness-110"
@@ -295,6 +298,7 @@ export default function CameraCapture({
           autoPlay
           playsInline
           muted
+          aria-label="Visualização ao vivo da câmera"
           className={`absolute inset-0 z-0 h-full w-full bg-muted object-cover ${
             uploadPreviewUrl ? "invisible" : ""
           }`}
@@ -311,6 +315,7 @@ export default function CameraCapture({
         {/* Overlay canvas for bounding boxes */}
         <canvas
           ref={overlayRef}
+          aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-20 h-full w-full"
         />
         <canvas ref={canvasRef} className="hidden" />
@@ -335,6 +340,10 @@ export default function CameraCapture({
         </p>
       )}
 
+      <span className="sr-only" role="status" aria-live="polite">
+        {scanning ? "Analisando imagem em busca de rostos." : "Análise concluída."}
+      </span>
+
       {uploadError && (
         <p className="text-destructive text-center text-sm max-w-md px-2" role="alert">
           {uploadError}
@@ -345,7 +354,7 @@ export default function CameraCapture({
         <button
           onClick={capture}
           disabled={!streaming || scanning}
-          className="flex flex-1 min-w-[8.5rem] items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 font-heading text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 glow-primary sm:min-w-0 sm:flex-none sm:px-6 sm:py-3"
+          className="flex min-h-11 flex-1 min-w-[8.5rem] items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2.5 font-heading text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40 glow-primary sm:min-w-0 sm:flex-none sm:px-6 sm:py-3"
         >
           <Camera className="h-5 w-5 shrink-0" />
           {scanning ? "Analisando..." : "Capturar"}
@@ -356,7 +365,8 @@ export default function CameraCapture({
             setCameraNotice(null);
             void startCamera();
           }}
-          className="flex items-center justify-center gap-2 rounded-lg bg-secondary px-3 py-2.5 font-heading text-sm font-semibold uppercase tracking-wider text-secondary-foreground transition hover:brightness-110 sm:px-4 sm:py-3"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-secondary px-3 py-2.5 font-heading text-sm font-semibold uppercase tracking-wider text-secondary-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-4 sm:py-3"
+          aria-label="Reiniciar câmera"
           title="Reiniciar câmera"
         >
           <RotateCcw className="h-4 w-4 shrink-0" />
@@ -365,7 +375,7 @@ export default function CameraCapture({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={scanning}
-          className="flex min-w-0 flex-1 basis-full items-center justify-center gap-2 rounded-lg bg-secondary px-3 py-2.5 font-heading text-sm font-semibold uppercase tracking-wider text-secondary-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 sm:basis-auto sm:flex-none sm:px-4 sm:py-3"
+          className="flex min-h-11 min-w-0 flex-1 basis-full items-center justify-center gap-2 rounded-lg bg-secondary px-3 py-2.5 font-heading text-sm font-semibold uppercase tracking-wider text-secondary-foreground transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40 sm:basis-auto sm:flex-none sm:px-4 sm:py-3"
         >
           <Upload className="h-4 w-4 shrink-0" />
           <span className="truncate">Enviar imagem</span>
